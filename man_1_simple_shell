@@ -1,0 +1,68 @@
+.TH HSH 1 "April 2026" "1.0" "Simple Shell Manual"
+.SH NAME
+hsh \- simple UNIX command interpreter
+.SH SYNOPSIS
+.B hsh
+[\fIscript_file\fR] [\fIargument ...\fR]
+.SH DESCRIPTION
+.B hsh
+is a simple UNIX command language interpreter that executes commands read
+from standard input or from a file.
+.PP
+The shell reads commands either interactively from the user's terminal or
+non-interactively from a file. It parses the input, resolves command paths,
+and executes the appropriate program using the environment inherited from the
+parent process.
+.SH INVOCATION
+.SS Interactive mode
+When invoked with standard input connected to a terminal, the shell displays
+a prompt
+.RB ( $ )
+and waits for the user to enter a command.
+.PP
+.nf
+$ ./hsh
+$ /bin/ls
+hsh main.c shell.c
+$ exit
+.fi
+.SS Non\-interactive mode
+When input is not connected to a terminal, the shell reads commands from
+standard input line by line without displaying a prompt.
+.PP
+.nf
+$ echo "/bin/ls" | ./hsh
+hsh main.c shell.c
+.fi
+.SH BUILT-IN COMMANDS
+.TP
+.B exit \fR[\fIn\fR]
+Exit the shell. If \fIn\fR is provided, it is used as the exit status;
+otherwise the exit status of the last command is used.
+.TP
+.B env
+Print the current environment to standard output. Each environment variable
+is printed on its own line in the form \fINAME=value\fR.
+.SH EXIT STATUS
+.B hsh
+exits with the exit status of the last command executed. If a command is not
+found, the exit status is
+.BR 127 .
+If a command is found but cannot be executed, the exit status is
+.BR 126 .
+.SH ENVIRONMENT
+.TP
+.B PATH
+A colon-separated list of directories in which the shell looks for commands.
+.TP
+.B HOME
+The home directory of the current user.
+.SH BUGS
+No known bugs at this time. Please report any bugs to the project authors.
+.SH AUTHORS
+Written by students of Holberton School.
+.SH SEE ALSO
+.BR sh (1),
+.BR bash (1),
+.BR execve (2),
+.BR environ (7)
