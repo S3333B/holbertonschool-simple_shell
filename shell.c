@@ -18,6 +18,7 @@ int main(void)
 	ssize_t nread;
 	pid_t pid;
 	int status;
+	char *argv[2];
 
 	while (1)
 	{
@@ -36,7 +37,17 @@ int main(void)
 		if (line[0] == '\0')
 			continue;
 
+		argv[0] = line;
+		argv[1] = NULL;
+
 		pid = fork();
+		if (pid == -1)
+		{
+			perror("fork");
+			free(line);
+			exit(EXIT_FAILURE);
+		}
+
 		if (pid == 0)
 		{
 			char *argv[2];
@@ -55,5 +66,7 @@ int main(void)
 			wait(&status);
 		}
 	}
+
+	free(line);
 	return (0);
 }
