@@ -23,7 +23,7 @@ int main(void)
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
-			printf("#sebfun$ ");
+			printf("#shellisfun$ ");
 
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
