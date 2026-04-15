@@ -1,0 +1,67 @@
+.TH HSH 1 "April 2026" "1.0" "Simple Shell Manual"
+
+.SH NAME
+hsh \- simple UNIX command interpreter
+
+.SH SYNOPSIS
+.B hsh
+
+.SH DESCRIPTION
+.B hsh
+is a simple UNIX command language interpreter that reads commands
+from standard input or from a file and executes them.
+
+The shell operates in two modes:
+.TP
+Interactive mode
+When started without arguments and connected to a terminal.
+.TP
+Non-interactive mode
+When input is piped or redirected.
+
+.SH USAGE
+Start the shell by typing:
+.B ./hsh
+
+Then enter commands like:
+.TP
+.B /bin/ls
+List directory contents
+.TP
+.B /bin/pwd
+Print current working directory
+
+.SH FUNCTIONALITY
+The shell:
+.TP
+- Displays a prompt in interactive mode
+- Reads user input
+- Executes commands using execve
+- Waits for child processes to terminate
+
+.SH RETURN VALUE
+The shell returns 0 on success.
+
+.SH ERRORS
+If a command is not found, an error message is displayed.
+
+.SH EXAMPLES
+.TP
+Interactive mode:
+.nf
+$ ./hsh
+($) /bin/ls
+file1 file2
+($)
+.fi
+
+.TP
+Non-interactive mode:
+.nf
+$ echo "/bin/ls" | ./hsh
+file1 file2
+.fi
+
+.SH AUTHORS
+Léo Lebtahi
+Sebastien Lamblin
