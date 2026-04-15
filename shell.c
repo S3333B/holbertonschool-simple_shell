@@ -22,7 +22,7 @@ int main(void)
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
-			printf("#shellisfun$ ");
+			printf("#cisfun$ ");
 
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
