@@ -1,5 +1,66 @@
 # holbertonschool-simple_shell
 
+## Description
+Simple Shell is a basic UNIX command line interpreter written in C.
+
+This project reproduces a minimal version of the standard shell `/bin/sh`.
+It allows users to execute commands in both interactive and non-interactive modes.
+
+The goal is to understand how a shell works internally by handling processes,
+system calls, and command parsing.
+
+---
+
+## Flow of execution
+
+The shell follows this logic:
+
+1. Display a prompt (interactive mode only)
+2. Read user input using `getline`
+3. Parse the command into tokens
+4. Create a child process using `fork`
+5. Execute the command with `execve`
+6. Wait for the child process using `wait`
+7. Repeat until EOF or `exit`
+
+---
+
+## Features
+
+- Interactive mode (prompt `$`)
+- Non-interactive mode (pipe support)
+- Execution of commands with full path (`/bin/ls`)
+- Process creation using `fork`
+- Program execution using `execve`
+- Process synchronization using `wait`
+- Error handling (command not found)
+
+---
+## Compilation
+```bash
+gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
+```
+## Flowchart
+
+<p align="center">
+  <img src="./images/flowchart.jpg" alt="Flowchart" width="600">
+</p>
+
+## Authors
+
+- Sebastien Lamblin
+- Leo Lebtahi
+
+---
+
+## Manual
+
+A manual page is available:
+
+```bash
+man ./man_1_simple_shell
+```
+
 ## Project GitHub Flow
 
 For this project we will use externals ressources in order to have a nice collaboration flow.
