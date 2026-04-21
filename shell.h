@@ -8,6 +8,7 @@
 #include <string.h>
 
 extern char **environ;
+extern char *shell_name;
 
 char *get_path(char *cmd);
 char **tokenize(char *line);

@@ -5,13 +5,15 @@
 #include <string.h>
 #include "shell.h"
 
+char *shell_name;
+
 /**
  * print_prompt - prints the prompt
  */
 void print_prompt(void)
 {
 	if (isatty(STDIN_FILENO))
-		printf("#cisfun$ ");
+		write(STDOUT_FILENO, "#cisfun$ ", 9);
 }
 
 /**
@@ -25,6 +27,8 @@ int handle_eof(ssize_t nread, char *line)
 {
 	if (nread == -1)
 	{
+		if (isatty(STDIN_FILENO))
+			write(STDOUT_FILENO, "\n", 1);
 		free(line);
 		return (1);
 	}
@@ -44,13 +48,19 @@ void clean_line(char *line)
 /**
  * main - simple shell
  *
+ * @argc: number of arguments
+ * @argv: vector of arguments
+ *
  * Return: Always 0
  */
-int main(void)
+int main(int argc, char **argv)
 {
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t nread;
+
+	(void)argc;
+	shell_name = argv[0];
 
 	while (1)
 	{
@@ -58,7 +68,7 @@ int main(void)
 		nread = getline(&line, &len, stdin);
 
 		if (handle_eof(nread, line))
-			exit(0);
+			return (0);
 
 		clean_line(line);
 
@@ -67,5 +77,4 @@ int main(void)
 
 		execute_command(line);
 	}
-	return (0);
 }
