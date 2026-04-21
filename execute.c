@@ -43,22 +43,31 @@ void execute_external(char **argv)
 	cmd_path = get_path(argv[0]);
 	if (cmd_path == NULL)
 	{
-		perror("./shell");
+		perror(shell_name);
 		return;
 	}
 
 	pid = fork();
+	if (pid == -1)
+	{
+		perror(shell_name);
+		free(cmd_path);
+		return;
+	}
+
 	if (pid == 0)
 	{
 		if (execve(cmd_path, argv, environ) == -1)
 		{
-			perror("./shell");
+			perror(shell_name);
+			free(cmd_path);
 			exit(EXIT_FAILURE);
 		}
 	}
 	else
 	{
-		wait(&status);
+		if (waitpid(pid, &status, 0) == -1)
+			perror(shell_name);
 	}
 
 	free(cmd_path);
@@ -73,11 +82,20 @@ void execute_command(char *line)
 	char **argv;
 
 	argv = tokenize(line);
-	if (argv == NULL || argv[0] == NULL)
+	if (argv == NULL)
 		return;
 
-	if (handle_builtin(argv, line))
+	if (argv[0] == NULL)
+	{
+		free(argv);
 		return;
+	}
+
+	if (handle_builtin(argv, line))
+	{
+		free(argv);
+		return;
+	}
 
 	execute_external(argv);
 
