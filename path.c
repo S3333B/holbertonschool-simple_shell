@@ -1,25 +1,65 @@
 #include "shell.h"
 #include <errno.h>
+#include <sys/stat.h>
 
 /**
- * build_path - builds a full path from a directory and a command
+ * build_path - builds a full path from a directory slice and a command
  * @dir: directory path
+ * @dir_len: directory length
  * @cmd: command name
  *
  * Return: allocated full path, or NULL on failure
  */
-static char *build_path(char *dir, char *cmd)
+static char *build_path(const char *dir, size_t dir_len, char *cmd)
 {
 	char *full_path;
-	size_t len;
+	size_t cmd_len, len;
+	const char *actual_dir;
 
-	len = strlen(dir) + strlen(cmd) + 2;
+	actual_dir = dir;
+	if (dir_len == 0)
+	{
+		actual_dir = ".";
+		dir_len = 1;
+	}
+
+	cmd_len = strlen(cmd);
+	len = dir_len + cmd_len + 2;
 	full_path = malloc(sizeof(char) * len);
 	if (full_path == NULL)
 		return (NULL);
 
-	snprintf(full_path, len, "%s/%s", dir, cmd);
+	memcpy(full_path, actual_dir, dir_len);
+	full_path[dir_len] = '/';
+	memcpy(full_path + dir_len + 1, cmd, cmd_len);
+	full_path[len - 1] = '\0';
+
 	return (full_path);
+}
+
+/**
+ * is_executable - checks whether a path can be executed
+ * @path: full path to inspect
+ *
+ * Return: 1 if executable, 0 otherwise
+ */
+static int is_executable(char *path)
+{
+	struct stat st;
+
+	if (stat(path, &st) == -1)
+		return (0);
+
+	if (S_ISDIR(st.st_mode))
+	{
+		errno = EACCES;
+		return (0);
+	}
+
+	if (access(path, X_OK) == 0)
+		return (1);
+
+	return (0);
 }
 
 /**
@@ -30,15 +70,16 @@ static char *build_path(char *dir, char *cmd)
  */
 char *get_path(char *cmd)
 {
-	char *path, *path_copy, *dir;
 	char *full_path;
+	char *path, *start, *end;
+	int saved_errno;
 
 	if (cmd == NULL || cmd[0] == '\0')
 		return (NULL);
 
 	if (strchr(cmd, '/'))
 	{
-		if (access(cmd, X_OK) == 0)
+		if (is_executable(cmd))
 			return (strdup(cmd));
 		return (NULL);
 	}
@@ -50,31 +91,32 @@ char *get_path(char *cmd)
 		return (NULL);
 	}
 
-	path_copy = strdup(path);
-	if (path_copy == NULL)
-		return (NULL);
-
-	dir = strtok(path_copy, ":");
-	while (dir != NULL)
+	saved_errno = ENOENT;
+	start = path;
+	while (1)
 	{
-		full_path = build_path(dir, cmd);
-		if (full_path == NULL)
-		{
-			free(path_copy);
-			return (NULL);
-		}
+		end = start;
+		while (*end != '\0' && *end != ':')
+			end++;
 
-		if (access(full_path, X_OK) == 0)
+		full_path = build_path(start, end - start, cmd);
+		if (full_path == NULL)
+			return (NULL);
+
+		if (is_executable(full_path))
 		{
-			free(path_copy);
 			return (full_path);
 		}
 
+		if (errno == EACCES)
+			saved_errno = EACCES;
+
 		free(full_path);
-		dir = strtok(NULL, ":");
+		if (*end == '\0')
+			break;
+		start = end + 1;
 	}
 
-	free(path_copy);
-	errno = ENOENT;
+	errno = saved_errno;
 	return (NULL);
 }
