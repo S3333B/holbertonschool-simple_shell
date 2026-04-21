@@ -40,6 +40,11 @@ The shell follows this logic:
 ```bash
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
 ```
+## Flowchart
+
+<p align="center">
+  <img src="./images/flowchart.jpg" alt="Flowchart" width="600">
+</p>
 
 ## Authors
 
