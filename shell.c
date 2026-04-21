@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <string.h>
 #include "shell.h"
-
-char *shell_name;
 
 /**
  * print_prompt - prints the prompt

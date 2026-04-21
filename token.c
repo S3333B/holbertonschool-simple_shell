@@ -1,6 +1,28 @@
 #include "shell.h"
 
 /**
+ * count_tokens - counts the number of tokens in a line
+ * @line: input line copy
+ *
+ * Return: number of tokens
+ */
+static size_t count_tokens(char *line)
+{
+	char *token;
+	size_t count;
+
+	count = 0;
+	token = strtok(line, " \t\n");
+	while (token != NULL)
+	{
+		count++;
+		token = strtok(NULL, " \t\n");
+	}
+
+	return (count);
+}
+
+/**
  * tokenize - splits a line into arguments
  * @line: input line
  *
@@ -9,31 +31,27 @@
 char **tokenize(char *line)
 {
 	char **args;
-	char **tmp;
+	char *line_copy;
 	char *token;
-	size_t i = 0, capacity = 8;
+	size_t count, i;
 
-	args = malloc(sizeof(char *) * capacity);
+	line_copy = strdup(line);
+	if (line_copy == NULL)
+		return (NULL);
+
+	count = count_tokens(line_copy);
+	free(line_copy);
+
+	args = malloc(sizeof(char *) * (count + 1));
 	if (args == NULL)
 		return (NULL);
 
-	token = strtok(line, " \t");
+	i = 0;
+	token = strtok(line, " \t\n");
 	while (token != NULL)
 	{
-		if (i + 1 >= capacity)
-		{
-			capacity *= 2;
-			tmp = realloc(args, sizeof(char *) * capacity);
-			if (tmp == NULL)
-			{
-				free(args);
-				return (NULL);
-			}
-			args = tmp;
-		}
-
 		args[i++] = token;
-		token = strtok(NULL, " \t");
+		token = strtok(NULL, " \t\n");
 	}
 	args[i] = NULL;
 
