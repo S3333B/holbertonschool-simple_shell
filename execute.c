@@ -1,5 +1,7 @@
 #include "shell.h"
 
+char *shell_name = "./hsh";
+
 /**
  * handle_builtin - handles built-in commands
  * @argv: arguments
