@@ -87,6 +87,46 @@ static int is_executable(char *path)
 }
 
 /**
+ * search_path - searches PATH directories for a command
+ * @path: PATH environment value
+ * @cmd: command
+ *
+ * Return: full path or NULL
+ */
+static char *search_path(char *path, char *cmd)
+{
+	char *full_path, *start, *end;
+	int saved_errno;
+
+	saved_errno = ENOENT;
+	start = path;
+	while (1)
+	{
+		end = start;
+		while (*end != '\0' && *end != ':')
+			end++;
+
+		full_path = build_path(start, end - start, cmd);
+		if (full_path == NULL)
+			return (NULL);
+
+		if (is_executable(full_path))
+			return (full_path);
+
+		if (errno == EACCES)
+			saved_errno = EACCES;
+
+		free(full_path);
+		if (*end == '\0')
+			break;
+		start = end + 1;
+	}
+
+	errno = saved_errno;
+	return (NULL);
+}
+
+/**
  * get_path - finds full path of a command
  * @cmd: command
  *
@@ -94,9 +134,7 @@ static int is_executable(char *path)
  */
 char *get_path(char *cmd)
 {
-	char *full_path;
-	char *path, *start, *end;
-	int saved_errno;
+	char *path;
 
 	if (cmd == NULL || cmd[0] == '\0')
 		return (NULL);
@@ -115,32 +153,5 @@ char *get_path(char *cmd)
 		return (NULL);
 	}
 
-	saved_errno = ENOENT;
-	start = path;
-	while (1)
-	{
-		end = start;
-		while (*end != '\0' && *end != ':')
-			end++;
-
-		full_path = build_path(start, end - start, cmd);
-		if (full_path == NULL)
-			return (NULL);
-
-		if (is_executable(full_path))
-		{
-			return (full_path);
-		}
-
-		if (errno == EACCES)
-			saved_errno = EACCES;
-
-		free(full_path);
-		if (*end == '\0')
-			break;
-		start = end + 1;
-	}
-
-	errno = saved_errno;
-	return (NULL);
+	return (search_path(path, cmd));
 }

@@ -8,15 +8,14 @@
 #include <sys/wait.h>
 
 extern char **environ;
-extern char *shell_name;
 
 char *get_path(char *cmd);
 char **tokenize(char *line);
 void print_prompt(void);
 int handle_eof(ssize_t nread, char *line);
 void clean_line(char *line);
-void execute_command(char *line);
+int execute_command(char *line, char *shell_name, int line_number);
 int handle_builtin(char **argv, char *line);
-void execute_external(char **argv);
+int execute_external(char **argv, char *shell_name, int line_number);
 
 #endif /* SHELL_H */

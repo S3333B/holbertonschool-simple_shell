@@ -55,9 +55,10 @@ int main(int argc, char **argv)
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t nread;
+	int line_number = 0;
+	int last_status = 0;
 
 	(void)argc;
-	shell_name = argv[0];
 
 	while (1)
 	{
@@ -65,13 +66,14 @@ int main(int argc, char **argv)
 		nread = getline(&line, &len, stdin);
 
 		if (handle_eof(nread, line))
-			return (0);
+			return (last_status);
 
 		clean_line(line);
+		line_number++;
 
 		if (line[0] == '\0')
 			continue;
 
-		execute_command(line);
+		last_status = execute_command(line, argv[0], line_number);
 	}
 }

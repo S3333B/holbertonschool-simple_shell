@@ -1,6 +1,25 @@
 #include "shell.h"
+#include <errno.h>
 
-char *shell_name = "./hsh";
+/**
+ * print_command_error - prints an error matching sh format
+ * @command: command that failed
+ * @shell_name: name used to run the shell
+ * @line_number: current input line number
+ */
+static void print_command_error(char *command, char *shell_name,
+	int line_number)
+{
+	char *message;
+
+	if (errno == EACCES)
+		message = "Permission denied";
+	else
+		message = "not found";
+
+	fprintf(stderr, "%s: %d: %s: %s\n", shell_name, line_number, command,
+		message);
+}
 
 /**
  * handle_builtin - handles built-in commands
@@ -32,21 +51,53 @@ int handle_builtin(char **argv, char *line)
 
 	return (0);
 }
+
+/**
+ * wait_for_child - waits for a child process and returns its status
+ * @pid: child process id
+ * @shell_name: name used to run the shell
+ *
+ * Return: child exit status
+ */
+static int wait_for_child(pid_t pid, char *shell_name)
+{
+	int status;
+
+	if (waitpid(pid, &status, 0) == -1)
+	{
+		perror(shell_name);
+		return (1);
+	}
+
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	if (WIFSIGNALED(status))
+		return (128 + WTERMSIG(status));
+	return (1);
+}
+
 /**
  * execute_external - executes external command
  * @argv: arguments
+ * @shell_name: name used to run the shell
+ * @line_number: current input line number
+ *
+ * Return: command exit status
  */
-void execute_external(char **argv)
+int execute_external(char **argv, char *shell_name, int line_number)
 {
 	pid_t pid;
-	int status;
+	int saved_errno, status;
 	char *cmd_path;
 
 	cmd_path = get_path(argv[0]);
 	if (cmd_path == NULL)
 	{
-		perror(shell_name);
-		return;
+		saved_errno = errno;
+		print_command_error(argv[0], shell_name, line_number);
+		if (saved_errno == EACCES)
+			return (126);
+		return (127);
 	}
 
 	pid = fork();
@@ -54,7 +105,7 @@ void execute_external(char **argv)
 	{
 		perror(shell_name);
 		free(cmd_path);
-		return;
+		return (1);
 	}
 
 	if (pid == 0)
@@ -66,40 +117,43 @@ void execute_external(char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
-	else
-	{
-		if (waitpid(pid, &status, 0) == -1)
-			perror(shell_name);
-	}
 
+	status = wait_for_child(pid, shell_name);
 	free(cmd_path);
+	return (status);
 }
 
 /**
  * execute_command - main dispatcher
  * @line: input line
+ * @shell_name: name used to run the shell
+ * @line_number: current input line number
+ *
+ * Return: command exit status
  */
-void execute_command(char *line)
+int execute_command(char *line, char *shell_name, int line_number)
 {
 	char **argv;
+	int status;
 
 	argv = tokenize(line);
 	if (argv == NULL)
-		return;
+		return (1);
 
 	if (argv[0] == NULL)
 	{
 		free(argv);
-		return;
+		return (0);
 	}
 
 	if (handle_builtin(argv, line))
 	{
 		free(argv);
-		return;
+		return (0);
 	}
 
-	execute_external(argv);
+	status = execute_external(argv, shell_name, line_number);
 
 	free(argv);
+	return (status);
 }
